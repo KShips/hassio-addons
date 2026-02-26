@@ -17,14 +17,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache \
     bluez \
-    bluez-libs \
-    nano \
-    libstdc++ \
-    mariadb-common \
-    mariadb-connector-c \
-    ncurses-libs \
-    libcurl \
-    mosquitto-clients
+    bluez-dev \
+    boost-dev \
+    curl-dev \
+    git \
+    g++ \
+    make \
+    mariadb-dev \
+    mosquitto-clients \
+    tzdata
            
 # download and build SBFspot
 WORKDIR /tmp
@@ -36,7 +37,7 @@ RUN \
     && make -C ./SBFspotUploadDaemon mariadb
 
 
-# runtinme container   
+# runtime container   
 FROM $BUILD_FROM
 
 ARG TEMPIO_VERSION BUILD_ARCH
@@ -46,22 +47,17 @@ RUN \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-
+# hadolint ignore=DL3018
 RUN apk update && apk add --no-cache \
-    bluez=5.79-r0 \
-    bluez-libs=5.79-r0 \
-    nano=8.2-r0 \
-    libstdc++=14.2.0-r4 \
-    mariadb-common=11.4.5-r0 \
-    mariadb-connector-c=3.3.10-r0 \
-    ncurses-libs=6.5_p20241006-r3 \
-    libcurl=8.12.1-r0 \
-    mosquitto-clients=2.0.20-r0
-    
-    #tzdata=2023c-r1 
-    #boost-date_time1.78 
-
-
+    bluez \
+    bluez-libs \
+    nano \
+    libstdc++ \
+    mariadb-common \
+    mariadb-connector-c \
+    ncurses-libs \
+    libcurl \
+    mosquitto-clients
 
 # Copy data for add-on
 WORKDIR /usr/bin/sbfspot
@@ -70,13 +66,6 @@ COPY --from=builder-base /tmp/SBFspot/mariadb/bin/SBFspot /usr/bin/sbfspot/SBFsp
 COPY --from=builder-base /tmp/SBFspotUploadDaemon/mariadb/bin/SBFspotUploadDaemon /usr/bin/sbfspot/SBFspotUploadDaemon
 COPY --from=builder-base /tmp/SBFspot/date_time_zonespec.csv /usr/bin/sbfspot/date_time_zonespec.csv
 COPY --from=builder-base /tmp/SBFspot/TagList* /usr/bin/sbfspot/
-
-
-
-#RUN cp /tmp/SBFspot/mariadb/bin/SBFspot /usr/bin/sbfspot \
-# && cp /tmp/SBFspotUploadDaemon/mariadb/bin/SBFspotUploadDaemon /usr/bin/sbfspot \
-# && cp /tmp/SBFspot/date_time_zonespec.csv /usr/bin/sbfspot \
-# && cp /tmp/SBFspot/TagList* /usr/bin/sbfspot
 
 COPY rootfs /
 
@@ -87,14 +76,14 @@ RUN chmod a+x /etc/services.d/sbfspot/** /usr/bin/sbfspot/**
 RUN echo 'SHELL=/bin/bash' > /etc/crontabs/root
 # update sensors after restart
 RUN echo '@reboot sleep 30 && /usr/bin/sbfspot/SBFspot -v -ad0 -am0 -mqtt -finq > /dev/stdout' >> /etc/crontabs/root
-# daily data SBFspot
+# poll inverter every minute during daytime
 RUN echo '1-59 6-22 * * *    /usr/bin/sbfspot/SBFspot -v -ad1 -am0 -ae0 -mqtt > /dev/stdout' >> /etc/crontabs/root
 # monthly data SBFspot archive upload at 5:55am now with -mqtt call
 RUN echo '55 05 * * *       /usr/bin/sbfspot/SBFspot -v -sp0 -ad14 -am1 -ae1 -mqtt -finq > /dev/stdout' >> /etc/crontabs/root
 # start SBFspotUpload 1 min after boot
 RUN echo '@reboot sleep 60 && /usr/bin/sbfspot/SBFspotUploadDaemon -c /usr/bin/sbfspot/SBFspotUpload.cfg > /dev/stdout' >> /etc/crontabs/root
-#  Log SBFspotUpload to HA logging window  defunct now in version 3.9.6+ sbfspot, using it for the timed message
-RUN echo '*/5 6-22 * * * /usr/bin/sbfspot/taillog.sh' >> /etc/crontabs/root
+# timed message log
+RUN echo '1-59 6-22 * * * /usr/bin/sbfspot/taillog.sh' >> /etc/crontabs/root
 
 # Labels
 LABEL \
@@ -113,7 +102,3 @@ LABEL \
     org.label-schema.vcs-ref=${BUILD_REF} \
     org.label-schema.vcs-url="https://github.com/habuild/hassio-addons" \
     org.label-schema.vendor="Hasqt"
-
-
-#Launch nginx with debug options. not working yet
-#CMD [ "nginx","-g","daemon off;error_log /dev/stdout debug;" ] 
