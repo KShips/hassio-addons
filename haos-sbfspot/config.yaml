@@ -1,6 +1,6 @@
 ---
 name: HAOS-SBFspot
-version: 2026.2.3
+version: 2026.2.4
 slug: haos-sbfspot
 description: Manage SBFspot with a simple interface
 url: "https://github.com/KShips/hassio-addons/tree/main/haos-sbfspot"
