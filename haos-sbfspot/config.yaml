@@ -1,6 +1,6 @@
 ---
 name: HAOS-SBFspot-KS
-version: 2026.2.10
+version: 2026.2.11
 slug: haos-sbfspot-ks
 description: Manage SBFspot with a simple interface
 url: "https://github.com/KShips/hassio-addons/tree/main/haos-sbfspot"
@@ -17,7 +17,7 @@ panel_icon: mdi:solar-power-variant
 map:
   - share:rw
 services:
-  - mysql:need
+  - mysql:want
   - mqtt:want
 options:
   Connection_Type: "Bluetooth"
