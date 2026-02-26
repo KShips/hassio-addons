@@ -1,7 +1,7 @@
 ---
 name: HAOS-SBFspot-KS
 version: 2026.2.5
-slug: haos-sbfspot
+slug: haos-sbfspot-KS
 description: Manage SBFspot with a simple interface
 url: "https://github.com/KShips/hassio-addons/tree/main/haos-sbfspot"
 stage: experimental
@@ -10,7 +10,6 @@ image: "ghcr.io/KShips/{arch}-addon-haos-sbfspot"
 arch:
   - aarch64
   - amd64
-  - i386
 init: false
 host_network: true
 host_dbus: true
