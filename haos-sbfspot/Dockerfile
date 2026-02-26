@@ -14,17 +14,17 @@ COPY rootfs /
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # install requirements
+# hadolint ignore=DL3018
 RUN apk update && apk add --no-cache \
-    bluez=5.79-r0 \
-    bluez-dev=5.79-r0 \
-    boost-dev=1.84.0-r2 \
-    curl-dev=8.12.1-r0 \
-    git=2.47.2-r0 \
-    g++=14.2.0-r4 \
-    make=4.4.1-r2 \
-    mariadb-dev=11.4.5-r0\
-    mosquitto-clients=2.0.20-r0 \
-    tzdata=2025a-r0
+    bluez \
+    bluez-libs \
+    nano \
+    libstdc++ \
+    mariadb-common \
+    mariadb-connector-c \
+    ncurses-libs \
+    libcurl \
+    mosquitto-clients
            
 # download and build SBFspot
 WORKDIR /tmp
